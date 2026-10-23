@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: RepoMedic AI API
+  version: 1.0.0
+  description: Local-only bug analysis, approval, and verified test evidence.
+servers:
+  - url: http://127.0.0.1:4000/api
+paths:
+  /health:
+    get:
+      summary: Check backend and configured local Ollama model
+      responses:
+        "200":
+          description: Backend status; Ollama availability is reported without substituting another model.
+  /repos:
+    get:
+      summary: List registered repositories
+      responses:
+        "200":
+          description: The bounded repository registry.
+  /tools:
+    get:
+      summary: List registered agent tools and access classes
+      responses:
+        "200":
+          description: Tool catalog.
+  /runs:
+    get:
+      summary: List recent execution runs
+      responses:
+        "200":
+          description: Execution history.
+    post:
+      summary: Create an analysis run
+      description: Enqueues a sequential analysis; no patch is applied by this request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunRequest"
+      responses:
+        "202":
+          description: Run accepted.
+        "400":
+          description: Invalid request.
+  /runs/{id}:
+    get:
+      summary: Get run status, proposal, events, and evidence
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Run snapshot.
+        "404":
+          description: Run not found.
+  /runs/{id}/events:
+    get:
+      summary: Subscribe to run progress
+      description: Server-Sent Events stream that replays known events and sends new progress.
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: text/event-stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /runs/{id}/approve:
+    post:
+      summary: Approve a proposal and run the fixed regression test
+      description: Applies the proposal only to that run's temporary copy.
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Test completed; inspect the recorded exit code and output.
+        "404":
+          description: Run not found.
+        "409":
+          description: Run has no approvable proposal or approval already occurred.
+components:
+  parameters:
+    RunId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    RunRequest:
+      type: object
+      additionalProperties: false
+      required: [repositoryId, bugReport]
+      properties:
+        repositoryId:
+          type: string
+          const: demo-express
+        bugReport:
+          type: string
+          minLength: 12
+          maxLength: 2000
+        mode:
+          type: string
+          enum: [ollama, demo]
+          default: ollama

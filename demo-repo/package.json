@@ -1,0 +1,14 @@
+{
+  "name": "repomedic-sample-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A tiny Express application used as RepoMedic's reproducible bug demo.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "node --test test/users.test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
