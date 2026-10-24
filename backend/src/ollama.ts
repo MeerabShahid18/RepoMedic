@@ -84,7 +84,7 @@ export async function inferWithOllama(input: {
             { role: "system", content: "You are RepoMedic's cautious local code analysis model. Be evidence-based and output valid JSON only." },
             { role: "user", content: prompt }
           ],
-          options: { temperature: 0.1, num_ctx: 2048, num_predict: 600 }
+          options: { temperature: 0.1, num_ctx: 8192, num_predict: 2000 }
         })
       });
       if (!response.ok) throw new Error(`Ollama returned HTTP ${response.status}. Check that ${model} is available locally.`);
